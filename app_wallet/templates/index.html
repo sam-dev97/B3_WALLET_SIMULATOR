@@ -1,0 +1,68 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<div class="wallet-funds">
+    <p class="funds-name">CARTEIRA:
+    R$ {{ user.userprofile.saldo|floatformat:2 }}</p>
+</div>
+
+<div class="available-tickets">
+    {% if saved_data %}
+        {% for stock in saved_data %}
+            <div class="ticket">
+                <h3>{{ stock.ticker }}</h3>
+                <p>Fechamento: {{ stock.close_price|floatformat:2 }}</p>
+                <p>Data: {{ stock.date }}</p>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>Não há dados disponíveis.</p>
+    {% endif %}
+</div>
+<div class="operations">
+    <div class='purchase-section'>
+        <h2 class='purchase-title'>Comprar</h2>
+        
+        <form method="post">
+            {% csrf_token %}
+            {{ purchase_form.as_p }}
+            <button type="submit">Comprar</button>
+        </form>
+    </div>
+
+    <div class='sell-section'>
+        <h2 class='sell-title'>Vender</h2>
+        
+        <form method="post">
+            {% csrf_token %}
+            {{ sell_form.as_p}}
+            <button type="submit">Vender</button>
+        </form>
+    </div>
+</div>
+<div class="purchase-history">
+    <h2>Histórico de Compras</h2>
+    <ul>
+        {% for purchase in user_purchase_history %}
+        {% if purchase.quantity_bought > 0 %}
+            <li>{{ purchase.ticker }} - Quantidade: {{ purchase.quantity_bought }} - Preço: R$ {{ purchase.purchase_price }} - Data: {{ purchase.date }}</li>
+        {% endif %}
+            {% empty %}
+            <li>Nenhuma compra realizada ainda.</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<div class="sell-history">
+    <h2>Histórico de Vendas</h2>
+    <ul>
+        {% for sell in user_purchase_history %}
+            {% if sell.quantity_sold > 0 %}
+            <li>{{ sell.ticker }} - Quantidade: {{ sell.quantity_sold }} - Preço: R$ {{ sell.purchase_price }} - Data: {{ sell.date }}</li>
+            {% endif %}
+        {% empty %}
+            <li>Nenhuma venda realizada ainda.</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
