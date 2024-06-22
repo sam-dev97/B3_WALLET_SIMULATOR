@@ -2,7 +2,7 @@
 
 {% block content %}
 <div class="wallet-funds">
-    <p class="funds-name">CARTEIRA:
+    <p class="funds-name">WALLET:
     R$ {{ user.userprofile.saldo|floatformat:2 }}</p>
 </div>
 
@@ -11,57 +11,57 @@
         {% for stock in saved_data %}
             <div class="ticket">
                 <h3>{{ stock.ticker }}</h3>
-                <p>Fechamento: {{ stock.close_price|floatformat:2 }}</p>
-                <p>Data: {{ stock.date }}</p>
+                <p>Close: {{ stock.close_price|floatformat:2 }}</p>
+                <p>Date: {{ stock.date }}</p>
             </div>
         {% endfor %}
     {% else %}
-        <p>Não há dados disponíveis.</p>
+        <p>No data available.</p>
     {% endif %}
 </div>
 <div class="operations">
     <div class='purchase-section'>
-        <h2 class='purchase-title'>Comprar</h2>
+        <h2 class='purchase-title'>Buy</h2>
         
         <form method="post">
             {% csrf_token %}
             {{ purchase_form.as_p }}
-            <button type="submit">Comprar</button>
+            <button type="submit">Buy</button>
         </form>
     </div>
 
     <div class='sell-section'>
-        <h2 class='sell-title'>Vender</h2>
+        <h2 class='sell-title'>Sell</h2>
         
         <form method="post">
             {% csrf_token %}
             {{ sell_form.as_p}}
-            <button type="submit">Vender</button>
+            <button type="submit">Sell</button>
         </form>
     </div>
 </div>
 <div class="purchase-history">
-    <h2>Histórico de Compras</h2>
+    <h2>Purchase History</h2>
     <ul>
         {% for purchase in user_purchase_history %}
         {% if purchase.quantity_bought > 0 %}
-            <li>{{ purchase.ticker }} - Quantidade: {{ purchase.quantity_bought }} - Preço: R$ {{ purchase.purchase_price }} - Data: {{ purchase.date }}</li>
+            <li>{{ purchase.ticker }} - Quantity: {{ purchase.quantity_bought }} - Price: R$ {{ purchase.purchase_price }} - Date: {{ purchase.date }}</li>
         {% endif %}
             {% empty %}
-            <li>Nenhuma compra realizada ainda.</li>
+            <li>No boughts are done yet.</li>
         {% endfor %}
     </ul>
 </div>
 
 <div class="sell-history">
-    <h2>Histórico de Vendas</h2>
+    <h2>Sell history</h2>
     <ul>
         {% for sell in user_purchase_history %}
             {% if sell.quantity_sold > 0 %}
-            <li>{{ sell.ticker }} - Quantidade: {{ sell.quantity_sold }} - Preço: R$ {{ sell.purchase_price }} - Data: {{ sell.date }}</li>
+            <li>{{ sell.ticker }} - Quantity: {{ sell.quantity_sold }} - Price: R$ {{ sell.purchase_price }} - Date: {{ sell.date }}</li>
             {% endif %}
         {% empty %}
-            <li>Nenhuma venda realizada ainda.</li>
+            <li>No solds are done yet.</li>
         {% endfor %}
     </ul>
 </div>

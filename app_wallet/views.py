@@ -65,11 +65,11 @@ def home(request):
                         user_profile.saldo -= total_cost
                         user_profile.save()
                         purchase_instance.save()
-                    messages.success(request, 'Compra realizada com sucesso!')
+                    messages.success(request, 'Purchase made successfully!')
                 else:
-                    messages.error(request, 'Saldo insuficiente para realizar a compra.')
+                    messages.error(request, 'Insufficient balance to make the purchase.')
             else:
-                messages.error(request, 'Ticker não encontrado nos dados de estoque.')
+                messages.error(request, 'Ticker not found in stock data.')
                 
         elif 'quantity_sell' in request.POST and sell_form.is_valid():
             ticker_sell = sell_form.cleaned_data['ticker']
@@ -100,13 +100,13 @@ def home(request):
                                 user=request.user
                             )
                             
-                        messages.success(request, f'{quantity_sell} ações de {ticker_sell} vendidas com sucesso!')
+                        messages.success(request, f'{quantity_sell} {ticker_sell} tickets sold!')
                     else:
-                        messages.error(request, 'Ações insuficientes para realizar a venda.')
+                        messages.error(request, 'Insufficient tickets to make the sale.')
                 else:
-                    messages.error(request, 'Dados de estoque não encontrados ou quantidade inválida.')
+                    messages.error(request, 'Stock data not found or invalid quantity.')
             else:
-                messages.error(request, 'Quantidade de ações insuficiente para realizar a venda.')
+                messages.error(request, 'Insufficient tickets to make the sale.')
 
         return redirect('home')
     else:
