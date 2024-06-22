@@ -8,7 +8,6 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     saldo = models.DecimalField(max_digits=10, decimal_places=2, default=100000.00)
 
-
     def __str__(self):
         return self.user.username
     
@@ -32,7 +31,6 @@ class StockData(models.Model):
     class Meta:
         unique_together = ('ticker', 'date', 'user')
     
-
 class PurchaseData(models.Model):
     ticker = models.CharField(max_length=10)
     quantity_bought = models.IntegerField(default=0)
