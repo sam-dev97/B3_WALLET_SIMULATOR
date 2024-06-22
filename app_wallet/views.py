@@ -9,7 +9,7 @@ from django.contrib.auth import login, logout
 from .forms import RegisterForm
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from django.db.models import Count
+from django.db.models import Count, Sum
 
 @login_required
 def home(request):
@@ -77,32 +77,41 @@ def home(request):
             user_profile, created = UserProfile.objects.get_or_create(user=request.user)
             stock_data_sell = StockData.objects.filter(ticker=ticker_sell, user=request.user).order_by('-date').first()
             
-            if stock_data_sell and quantity_sell > 0:
-                current_price = stock_data_sell.close_price
-                total_value = current_price * quantity_sell
+            total_bought = PurchaseData.objects.filter(ticker=ticker_sell, user=request.user).aggregate(total_bought=Sum('quantity_bought'))['total_bought'] or 0
+            total_sold = PurchaseData.objects.filter(ticker=ticker_sell, user=request.user).aggregate(total_sold=Sum('quantity_sold'))['total_sold'] or 0
+            net_quantity = total_bought - total_sold
+            
+            if net_quantity >= quantity_sell:
+                stock_data_sell = StockData.objects.filter(ticker=ticker_sell, user=request.user).order_by('-date').first()
                 
-                if total_value > 0:
-                    with transaction.atomic():
-                        user_profile.saldo += total_value
-                        user_profile.save()
-                        
-                        PurchaseData.objects.create(
-                            ticker=ticker_sell,
-                            quantity_sold=quantity_sell,
-                            purchase_price=current_price,
-                            user=request.user
-                        )
-                        
-                    messages.success(request, f'{quantity_sell} ações de {ticker_sell} vendidas com sucesso!')
+                if stock_data_sell and quantity_sell > 0:
+                    current_price = stock_data_sell.close_price
+                    total_value = current_price * quantity_sell
+                    
+                    if total_value > 0:
+                        with transaction.atomic():
+                            user_profile.saldo += total_value
+                            user_profile.save()
+                            
+                            PurchaseData.objects.create(
+                                ticker=ticker_sell,
+                                quantity_sold=quantity_sell,
+                                purchase_price=current_price,
+                                user=request.user
+                            )
+                            
+                        messages.success(request, f'{quantity_sell} ações de {ticker_sell} vendidas com sucesso!')
+                    else:
+                        messages.error(request, 'Ações insuficientes para realizar a venda.')
                 else:
-                    messages.error(request, 'Ações insuficiente para realizar a venda.')
+                    messages.error(request, 'Dados de estoque não encontrados ou quantidade inválida.')
             else:
-                messages.error(request, 'Dados de estoque não encontrados ou quantidade inválida.')
-                
+                messages.error(request, 'Quantidade de ações insuficiente para realizar a venda.')
+
         return redirect('home')
     else:
         purchase_form = PurchaseForm()
-        sell_form = SellForm
+        sell_form = SellForm()
 
     user_purchase_history = PurchaseData.objects.filter(user=request.user).order_by('-date')
     context = {
