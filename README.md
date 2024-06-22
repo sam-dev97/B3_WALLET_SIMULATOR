@@ -1,4 +1,3 @@
-# B3_WALLET_SIMULATOR
 
 # B3_WALLET_SIMULATOR
 This is a Django-based stock trading application that allows users to buy and sell stocks, track their portfolio, and view their transaction history.
