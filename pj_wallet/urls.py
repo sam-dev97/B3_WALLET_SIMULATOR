@@ -12,4 +12,5 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     path('logout/', views.custom_logout, name='logout'),
     path('adicionar_saldo/', views.adicionar_saldo, name='adicionar_saldo'),
+    path('transaction_history/', views.transaction_history, name='transaction_history'),
 ]

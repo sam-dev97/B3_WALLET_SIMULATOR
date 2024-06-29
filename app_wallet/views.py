@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 import yfinance as yf
-from .models import StockData, PurchaseData, UserProfile
+from .models import StockData, PurchaseData, UserProfile, Transaction
 from datetime import date
 from django.contrib import messages
 from .forms import PurchaseForm, AdicionarSaldoForm, SellForm
@@ -62,9 +62,20 @@ def home(request):
                 
                 if user_profile.saldo >= total_cost:
                     with transaction.atomic():
+                        balance_before = user_profile.saldo
                         user_profile.saldo -= total_cost
                         user_profile.save()
                         purchase_instance.save()
+                        
+                        Transaction.objects.create(
+                            user=request.user,
+                            ticker=purchase_instance.ticker,
+                            quantity=purchase_instance.quantity_bought,
+                            transaction_type='buy',
+                            price=purchase_instance.purchase_price,
+                            balance_before=balance_before,
+                            balance_after=user_profile.saldo
+                        )    
                     messages.success(request, 'Purchase made successfully!')
                 else:
                     messages.error(request, 'Insufficient balance to make the purchase.')
@@ -90,6 +101,7 @@ def home(request):
                     
                     if total_value > 0:
                         with transaction.atomic():
+                            balance_before=user_profile.saldo
                             user_profile.saldo += total_value
                             user_profile.save()
                             
@@ -98,6 +110,15 @@ def home(request):
                                 quantity_sold=quantity_sell,
                                 purchase_price=current_price,
                                 user=request.user
+                            )
+                            
+                            Transaction.objects.create(
+                                user=request.user,
+                                ticker=ticker_sell,
+                                transaction_type='sell',
+                                price=current_price,
+                                balance_before=balance_before,
+                                balance_after=user_profile.saldo
                             )
                             
                         messages.success(request, f'{quantity_sell} {ticker_sell} tickets sold!')
@@ -164,3 +185,10 @@ def adicionar_saldo(request):
     else:
         form = AdicionarSaldoForm()
     return render(request, 'adicionar_saldo.html', {'form': form})
+
+
+@login_required
+def transaction_history(request):
+    transactions = Transaction.objects.filter(user=request.user).order_by('-date')
+    context = {'transactions': transactions}
+    return render(request, 'transaction_history.html', context)

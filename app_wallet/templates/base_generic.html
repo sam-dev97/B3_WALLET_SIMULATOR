@@ -13,7 +13,10 @@
         <p class="main-title">
             INVESTIMENT WALLET SIMULATOR
         </p>
+
         <ul>
+            <li><a href="{% url 'home' %}">Home</a></li>
+            <li><a href="{% url 'transaction_history' %}">Transaction history</a></li>
             {% if user.is_authenticated %}
                 <li>Welcome, {{ user.username }}</li>
                 <li><a href="{% url 'logout' %}">Logout</a></li>
