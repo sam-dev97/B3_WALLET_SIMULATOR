@@ -1,0 +1,35 @@
+{% extends 'base_generic.html' %}
+{% block content %}
+<div class="container-history">
+    <h1>You Wallet</h1>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Ticker code</th>
+                    <th>Quantity</th>
+                    <th>Price Now</th>
+                    <th>Average price paid</th>
+                    <th>Total amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for detail in details %}
+                    <tr>
+                        <td>{{ detail.ticker }}</td>            
+                        <td>{{ detail.quantity }}</td>
+                        <td>{{ detail.price }}</td>
+                        <td>{{ detail.price_average }}</td>
+                        <td> {{ detail.total }}</td>
+                        
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="7" class="empty-row">None transantions found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

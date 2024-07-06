@@ -47,10 +47,21 @@ class Transaction(models.Model):
     ticker = models.CharField(max_length=10)
     quantity = models.IntegerField(default=0)
     transaction_type = models.CharField(max_length=10, choices=[('buy', 'Compra'), ('sell', 'Venda')])
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     date = models.DateTimeField(auto_now_add=True)
     balance_before = models.DecimalField(max_digits=10, decimal_places=2)
     balance_after = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
         return f"{self.user} - {self.ticker} - {self.transaction_type} - {self.date}"
+    
+class Walletitself(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    ticker = models.CharField(max_length=10)
+    quantity = models.IntegerField(default=0)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    price_average = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total = models.DecimalField(max_digits=50, decimal_places=2, default=0)
+    
+    def __str__(self):
+        return f"{self.user} - {self.ticker}"

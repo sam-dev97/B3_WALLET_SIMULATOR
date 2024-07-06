@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 import yfinance as yf
-from .models import StockData, PurchaseData, UserProfile, Transaction
+from .models import StockData, PurchaseData, UserProfile, Transaction, Walletitself
 from datetime import date
 from django.contrib import messages
 from .forms import PurchaseForm, AdicionarSaldoForm, SellForm
@@ -9,7 +9,7 @@ from django.contrib.auth import login, logout
 from .forms import RegisterForm
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from django.db.models import Count, Sum
+from django.db.models import Count, Sum, Avg
 
 @login_required
 def home(request):
@@ -75,7 +75,9 @@ def home(request):
                             price=purchase_instance.purchase_price,
                             balance_before=balance_before,
                             balance_after=user_profile.saldo
-                        )    
+                        )
+                        
+                        update_wallet(purchase_instance.ticker, request.user)    
                     messages.success(request, 'Purchase made successfully!')
                 else:
                     messages.error(request, 'Insufficient balance to make the purchase.')
@@ -115,12 +117,14 @@ def home(request):
                             Transaction.objects.create(
                                 user=request.user,
                                 ticker=ticker_sell,
+                                quantity=quantity_sell,
                                 transaction_type='sell',
                                 price=current_price,
                                 balance_before=balance_before,
                                 balance_after=user_profile.saldo
                             )
                             
+                            update_wallet(ticker_sell, request.user)
                         messages.success(request, f'{quantity_sell} {ticker_sell} tickets sold!')
                     else:
                         messages.error(request, 'Insufficient tickets to make the sale.')
@@ -143,6 +147,29 @@ def home(request):
     }
 
     return render(request, 'index.html', context)
+
+def update_wallet(ticker, user):
+    total_bought = PurchaseData.objects.filter(ticker=ticker, user=user).aggregate(total_bought=Sum('quantity_bought'))['total_bought'] or 0
+    total_sold = PurchaseData.objects.filter(ticker=ticker, user=user).aggregate(total_sold=Sum('quantity_sold'))['total_sold'] or 0
+    net_quantity = total_bought - total_sold
+    
+    if net_quantity > 0:
+        current_price = StockData.objects.filter(ticker=ticker, user=user).order_by('-date').first().close_price
+        average_price = PurchaseData.objects.filter(ticker=ticker, user=user).aggregate(price_average=Avg('purchase_price'))['price_average'] or 0
+        total = average_price * net_quantity
+        
+        Walletitself.objects.update_or_create(
+            user=user,
+            ticker=ticker,
+            defaults={
+                'quantity': net_quantity,
+                'price': current_price,
+                'price_average': average_price,
+                'total' : total
+            }
+        )
+    else:
+        Walletitself.objects.filter(user=user, ticker=ticker).delete()
 
 def remove_duplicates(user):
     duplicates = (StockData.objects
@@ -192,3 +219,9 @@ def transaction_history(request):
     transactions = Transaction.objects.filter(user=request.user).order_by('-date')
     context = {'transactions': transactions}
     return render(request, 'transaction_history.html', context)
+
+@login_required
+def wallet_details(request):
+    details = Walletitself.objects.filter(user=request.user)
+    context = {'details' : details}
+    return render(request, 'wallet_details.html', context)

@@ -16,6 +16,7 @@
 
         <ul>
             <li><a href="{% url 'home' %}">Home</a></li>
+            <li><a href="{% url 'wallet_details' %}">Wallet Details</a></li>
             <li><a href="{% url 'transaction_history' %}">Transaction history</a></li>
             {% if user.is_authenticated %}
                 <li>Welcome, {{ user.username }}</li>
