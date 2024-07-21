@@ -12,4 +12,7 @@ urlpatterns = [
     path('register/', views.register, name='register'),
     path('logout/', views.custom_logout, name='logout'),
     path('adicionar_saldo/', views.adicionar_saldo, name='adicionar_saldo'),
+    path('transaction_history/', views.transaction_history, name='transaction_history'),
+    path('wallet_details/', views.wallet_details, name='wallet_details'),
+    path('ticker/<str:ticker>/', views.ticker_info, name='ticker_info'),
 ]

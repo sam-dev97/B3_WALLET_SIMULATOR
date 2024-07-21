@@ -1,0 +1,38 @@
+{% extends 'base_generic.html' %}
+{% block content %}
+<div class="container-history">
+    <h1>Full Transaction History</h1>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Ticker code</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Balance before</th>
+                    <th>Balance after</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaction in transactions %}
+                    <tr>
+                        <td>{{ transaction.date|date:"d/m/Y H:i" }}</td>
+                        <td>{{ transaction.transaction_type }}</td>
+                        <td>{{ transaction.ticker }}</td>
+                        <td>{{ transaction.quantity }}</td>
+                        <td>{{ transaction.price }}</td>
+                        <td>{{ transaction.balance_before }}</td>
+                        <td>{{ transaction.balance_after }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="7" class="empty-row">None transantions found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

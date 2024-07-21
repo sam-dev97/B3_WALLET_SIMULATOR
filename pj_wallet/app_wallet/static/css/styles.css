@@ -182,3 +182,58 @@ body {
 
     margin: 10px;
 }
+
+.container-history{
+    padding: 10px;
+    display: flex;
+    
+    flex-direction: column;
+    width: 100%;
+    align-content: center;
+    align-items: center;
+    justify-content: center;
+}
+
+
+
+th, td {
+    padding: 10px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.ticker-info {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.ticker-info h1 {
+    font-size: 2em;
+    margin-bottom: 10px;
+}
+
+.ticker-info .info-section,
+.ticker-info .quote-section,
+.ticker-info .dividends-section {
+    margin-bottom: 20px;
+}
+
+.ticker-info p {
+    margin-bottom: 5px;
+    font-size: 1.1em;
+}
+
+.ticker-info strong {
+    color: #0044cc;
+}
+
+.ticker-info h2 {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+    color: #333;
+    border-bottom: 2px solid #0044cc;
+    padding-bottom: 5px;
+}

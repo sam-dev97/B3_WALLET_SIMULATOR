@@ -5,15 +5,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <title>{% block title %}B3 SIMULATOR{% endblock %}</title>
+    <title>{% block title %}INVESTIMENT WALLET SIMULATOR{% endblock %}</title>
 </head>
 <body>
 
     <nav class="nav-menu">
         <p class="main-title">
-            B3 SIMULATOR
+            INVESTIMENT WALLET SIMULATOR
         </p>
+
         <ul>
+            <li><a href="{% url 'home' %}">Home</a></li>
+            <li><a href="{% url 'wallet_details' %}">Wallet Details</a></li>
+            <li><a href="{% url 'transaction_history' %}">Transaction history</a></li>
             {% if user.is_authenticated %}
                 <li>Welcome, {{ user.username }}</li>
                 <li><a href="{% url 'logout' %}">Logout</a></li>
