@@ -1,0 +1,77 @@
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 100%;
+    line-height: 1.6;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+body {
+    background-color: #fff;
+    color: #000;
+    font-family: Arial, sans-serif;
+}
+
+ul,
+ol {
+    list-style: none;
+    padding-left: 0;
+}
+
+a {
+    text-decoration: none;
+}
+
+button,
+input,
+textarea {
+    border: none;
+    outline: none;
+    font-family: inherit;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin: 0;
+    font-weight: normal;
+}
+
+figure {
+    margin: 0;
+}
+
+img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+form {
+    margin: 0;
+}
+
+th, td {
+    padding: 0;
+}
+
+.titleh1{
+    color: red;
+}
+
+body{
+    background-color: red;
+}

@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <title>{% block title %}INVESTIMENT WALLET SIMULATOR{% endblock %}</title>
+</head>
+<body>
+
+    <nav class="nav-menu">
+        <p class="main-title">
+            INVESTIMENT WALLET SIMULATOR
+        </p>
+
+        <ul>
+            <li><a href="{% url 'home' %}">Home</a></li>
+            <li><a href="{% url 'wallet_details' %}">Wallet Details</a></li>
+            <li><a href="{% url 'transaction_history' %}">Transaction history</a></li>
+            {% if user.is_authenticated %}
+                <li>Welcome, {{ user.username }}</li>
+                <li><a href="{% url 'logout' %}">Logout</a></li>
+            {% else %}
+                <li><a href="{% url 'login' %}">Login</a></li>
+                <li><a href="{% url 'register' %}">Register</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    {% if messages %}
+        <div>
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% block content %}
+    {% endblock %}
+
+</body>
+</html>
