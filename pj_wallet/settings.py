@@ -51,12 +51,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'pj_wallet.wsgi.application'
 
-DATABASES = {
+'''DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',  # Armazena o banco de dados no diretório base do projeto
     }
-}
+}'''
 
 '''DATABASES = {
     'default': {
@@ -72,9 +72,9 @@ DATABASES = {
     }
 }'''
 
-'''DATABASES = {
+DATABASES = {
     'default': dj_database_url.config(), # type: ignore
-}'''
+}
 
 
 AUTH_PASSWORD_VALIDATORS = [
