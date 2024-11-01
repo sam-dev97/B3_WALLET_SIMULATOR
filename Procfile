@@ -1,1 +1,1 @@
-web: gunicorn fusion.wsgi --log-file -
+web: gunicorn pj_wallet.wsgi --log-file -
