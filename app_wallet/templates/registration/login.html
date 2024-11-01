@@ -1,15 +1,45 @@
 {% extends "base_generic.html" %}
-
+{% load static %}
+{% load bootstrap4 %}
 {% block content %}
+<div class="container-fluid d-flex align-items-center justify-content-center vh-100">
+    <div class="w-50 p-4 bg-white rounded shadow-lg">
+        <form class="form-signin" id="form-signin" method="post" autocomplete="off">
+            {% csrf_token %}
+            <div class="text-center">
+                <img class="mb-4" src="https://image.winudf.com/v2/image1/c3RvY2subWFya2V0LnNpbXVsYXRvci5zdG9jay52aXJ0dWFsLnRyYWRpbmdfaWNvbl8xNTQ3MDA3ODY1XzA2Mg/icon.png?w=&fakeurl=1" alt="" width="72" height="72">
+                <h1 class="h3 mb-3 font-weight-normal">Wallet Access</h1>
+            </div>
 
-<div class='login-block'>
-  <h2>Login</h2>
-  
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Login</button>
+            <label for="username" class="sr-only">User</label>
+            <input type="text" id="username" name="username" class="form-control mt-2" placeholder="Your username" required autofocus>
 
-  </form>
+            <label for="password" class="sr-only">Password</label>
+            <input type="password" id="password" name="password" class="form-control mt-2" placeholder="Your password" required>
+
+            <button class="btn btn-lg btn-primary btn-block mt-4" type="submit">Login</button>
+        </form>
+
+        <div class="text-center mt-3">
+            <a href="{% url 'register' %}" class="btn btn-lg btn-secondary btn-block">Register</a>
+        </div>
+
+        <div class="text-center mt-5">
+            <p class="text-muted">&copy; Samuel Santos - {% now 'Y' %}</p>
+        </div>
+
+        {% if messages %}
+            <div class="mt-3">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} text-center">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
 </div>
+
 {% endblock %}
+
+

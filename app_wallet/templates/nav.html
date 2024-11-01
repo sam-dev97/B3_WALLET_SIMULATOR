@@ -1,0 +1,22 @@
+{% load static %}
+{% load bootstrap4 %}
+<div class="row w-100 bg-dark">             
+        <span class="fs-3 d-none d-sm-inline text-info w-100  pt-3">
+                <h1>    STOCK SIMULATOR     </h1>
+        </span>
+        <ul class="nav nav-pills flex-column mt-2 text-white">
+                <li class="nav-item">
+                        <h3><i></i><a class="nav-link text-white" href="{% url 'home' %}"><i class="fas fa-home"></i>  Home</a></h2>
+                </li>
+                <li class="nav-item">
+                        <h3><i></i><a class="nav-link text-white" href="{% url 'wallet_details' %}"><i class="fas fa-wallet"></i>  Wallet Details</a></h2>
+                </li>
+                <li class="nav-item">
+                        <h3><i></i><a class="nav-link  text-white" href="{% url 'transaction_history' %}"><i class="fas fa-dollar-sign"></i>  Transactions</a></h2>
+                </li>
+                <li class="nav-item text-white">
+                        <h3><a class="nav-link  text-white" href="{% url 'logout' %}"><i class="fa-sharp fa-light fa-gear"></i>  Logout</a></h2>
+                </li>
+        </ul>
+
+</div>

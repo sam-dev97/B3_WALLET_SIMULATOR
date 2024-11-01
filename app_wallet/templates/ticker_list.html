@@ -1,0 +1,20 @@
+{% load bootstrap4 %}
+{% load static %}
+<div class="row">
+    <div class="col">
+        <div class="available-tickets">
+            {% if saved_data %}
+                {% for stock in saved_data %}
+                    <a href="{% url 'ticker_info' stock.ticker %}">
+                        <div class="ticket">
+                            <h5>{{ stock.ticker }}</h5>
+                            Close: {{ stock.close_price|floatformat:2 }}
+                        </div>
+                    </a>
+                {% endfor %}
+            {% else %}
+                <p>No data available.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>

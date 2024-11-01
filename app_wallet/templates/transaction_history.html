@@ -1,38 +1,59 @@
 {% extends 'base_generic.html' %}
 {% block content %}
-<div class="container-history">
-    <h1>Full Transaction History</h1>
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Type</th>
-                    <th>Ticker code</th>
-                    <th>Quantity</th>
-                    <th>Price</th>
-                    <th>Balance before</th>
-                    <th>Balance after</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for transaction in transactions %}
-                    <tr>
-                        <td>{{ transaction.date|date:"d/m/Y H:i" }}</td>
-                        <td>{{ transaction.transaction_type }}</td>
-                        <td>{{ transaction.ticker }}</td>
-                        <td>{{ transaction.quantity }}</td>
-                        <td>{{ transaction.price }}</td>
-                        <td>{{ transaction.balance_before }}</td>
-                        <td>{{ transaction.balance_after }}</td>
+
+<div class="row">
+    <div class="col bg-info text-white justify-content-center"  style="width:100%; display: flex;">
+        <h1>FULL TRANSACTION HISTORY</h1>
+    </div>
+</div>
+<div class="row">
+
+    <div class="container-history mt-4">
+        <div class="table-container mt-3" style="width: 80%; font-size: 15px;">
+            <table class="table table-striped">
+                <thead class="bg-info">
+                    <tr style="color: white;">
+                        <th scope="col">Date</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Ticker code</th>
+                        <th scope="col">Quantity</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Balance before</th>
+                        <th scope="col">Balance after</th>
                     </tr>
-                {% empty %}
-                    <tr>
-                        <td colspan="7" class="empty-row">None transantions found.</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {% for transaction in page_obj %}
+                        <tr scope="row">
+                            <td>{{ transaction.date|date:"d/m/Y H:i" }}</td>
+                            <td>{{ transaction.operation_type }}</td>
+                            <td>{{ transaction.ticker }}</td>
+                            <td>{{ transaction.quantity }}</td>
+                            <td>{{ transaction.price }}</td>
+                            <td>{{ transaction.balance_before }}</td>
+                            <td>{{ transaction.balance_after }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr scope="row">
+                            <td colspan="7" class="empty-row">None transantions found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <nav aria-label="...">
+                <ul class="pagination">   
+                        {% if page_obj.has_previous %}
+                            <li class="page-item"> <a class="page-link" href="?page=1">&laquo; primeira</a> </li>
+                            <li class="page-item"> <a class="page-link" href="?page={{page_obj.previous_page_number}}">anterior</a></li>
+                        {% endif %}
+                        <li class="page-item disabled"> <a class="page-link" href="#"> {{ page_obj.number }} de {{page_obj.paginator.num_pages}}</a></li>
+                        {% if page_obj.has_next%}
+                        <li class="page-item"> <a class="page-link" href="?page={{page_obj.next_page_number}}">próxima</a></li>
+                        <li class="page-item"> <a class="page-link" href="?page={{page_obj.paginator.num_pages}}">última &raquo;</a></li>
+                        {% endif %}
+                </ul>
+            </nav>
+        </div>
     </div>
 </div>
 {% endblock %}

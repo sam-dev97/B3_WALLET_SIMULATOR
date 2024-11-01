@@ -7,7 +7,7 @@ SECRET_KEY = 'django-insecure-&@w$9w-mu^9&wut1n%+90yu!)l=9b69*2nqc%in5vjp+=*6eo&
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -17,7 +17,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'app_wallet',
-    'dbbackup',
+    'bootstrap4'
+
 ]
 
 MIDDLEWARE = [
@@ -65,6 +66,10 @@ DATABASES = {
     }
 }
 
+'''DATABASES = {
+    'default': dj_database_url.config(),
+}'''
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -81,25 +86,25 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'pt-br'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Sao_Paulo'
 
 USE_I18N = True
 
 USE_TZ = True
 
 import os
-STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'static'
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'app_wallet/static/'),
-]
+STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR,'static/')
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
+"""
 DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
 DBBACKUP_STORAGE_OPTIONS = {'location': 'D:\\'}
+"""
+LOGIN_REDIRECT_URL = 'home'
+LOGOUT_REDIRECT_URL = 'login'

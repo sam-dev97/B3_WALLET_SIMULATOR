@@ -1,32 +1,35 @@
+# Gerenciamento de views (temporáriamente)
 from django.shortcuts import render, redirect
+# Framework principal
 import yfinance as yf
-from .models import StockData, PurchaseData, UserProfile, Transaction, Walletitself
 from datetime import date
-from django.contrib import messages
-from .forms import PurchaseForm, AdicionarSaldoForm, SellForm
+# Wallet Management
+from .models import StockData, UserProfile, Operation, Walletitself
+# Imports de utilitáros do django
+from django.core.paginator import Paginator
 from django.db import transaction
-from django.contrib.auth import login, logout
-from .forms import RegisterForm
-from django.contrib.auth.decorators import login_required
-from django.utils import timezone
 from django.db.models import Count, Sum, Avg
+from django.utils import timezone
+# Lista de ações pra não poluir a view
+from app_wallet import list_tickers
+#Authentication
+from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 
 @login_required
 def home(request):
-    tickers = [
-        "PETR4.SA", "VALE3.SA", "ITUB4.SA", "BBDC4.SA", "B3SA3.SA",
-        "BBAS3.SA", "ABEV3.SA", "WEGE3.SA", "MGLU3.SA", "PETR3.SA",
-        "ITSA4.SA", "RENT3.SA", "LREN3.SA", "JBSS3.SA", "GGBR4.SA",
-        "BTOW3.SA", "SUZB3.SA", "CSAN3.SA", "VVAR3.SA", "RAIL3.SA",
-    ]
-
-    for ticker in tickers:
+    # Execução do Yfinance
+    for ticker in list_tickers.tickers:
         stock = yf.Ticker(ticker)
         history = stock.history(period='1d')
         
         if not history.empty:
-            latest_data = {'Close': history['Close'].iloc[-1]}
-            stock_data = StockData.objects.filter(ticker=ticker, user=request.user).first()
+            latest_data = {
+                'Close': history['Close'].iloc[-1] # Pega o último valor registrado
+                }
+            stock_data = StockData.objects.filter(ticker=ticker).first()
             
             if stock_data:
                 stock_data.close_price = latest_data['Close']
@@ -37,126 +40,111 @@ def home(request):
                     ticker=ticker,
                     close_price=latest_data['Close'],
                     date = timezone.now().date(),
-                    user=request.user,
                 )
                 
-    remove_duplicates(request.user)
-
-    saved_data = StockData.objects.filter(user=request.user).order_by('-date')
+    saved_data = StockData.objects.all()
 
     if request.method == 'POST':
+        operation_selected = request.POST.get('operation')
+        operation_ticker = request.POST.get('ticker')
+        operation_quantity = int(request.POST.get('quantity'))
         
-        purchase_form = PurchaseForm(request.POST)
-        sell_form = SellForm(request.POST)
+        if operation_ticker not in list_tickers.tickers or operation_quantity < 1:
+            messages.warning(request, "Ticker doesn't exist or invalid quantity!")
+        else:
+            user_profile = UserProfile.objects.get(user=request.user)
         
-        if 'quantity_bought' in request.POST and purchase_form.is_valid():
-            
-            purchase_instance = purchase_form.save(commit=False)
-            stock_data = StockData.objects.filter(ticker=purchase_instance.ticker, user=request.user).order_by('-date').first()
-            
-            if stock_data:
-                purchase_instance.purchase_price = stock_data.close_price
-                purchase_instance.user = request.user
-                total_cost = purchase_instance.purchase_price * purchase_instance.quantity_bought
-                user_profile = UserProfile.objects.get(user=request.user)
+            if operation_selected == 'buy':
                 
-                if user_profile.saldo >= total_cost:
-                    with transaction.atomic():
-                        balance_before = user_profile.saldo
-                        user_profile.saldo -= total_cost
-                        user_profile.save()
-                        purchase_instance.save()
-                        
-                        Transaction.objects.create(
-                            user=request.user,
-                            ticker=purchase_instance.ticker,
-                            quantity=purchase_instance.quantity_bought,
-                            transaction_type='buy',
-                            price=purchase_instance.purchase_price,
-                            balance_before=balance_before,
-                            balance_after=user_profile.saldo
-                        )
-                        
-                        update_wallet(purchase_instance.ticker, request.user)    
-                    messages.success(request, 'Purchase made successfully!')
-                else:
-                    messages.error(request, 'Insufficient balance to make the purchase.')
-            else:
-                messages.error(request, 'Ticker not found in stock data.')
+                # Seleciona do modelo stock_data o ticker que foi enviado no formulário, seleciona por data o mais recente
+                stock_data = StockData.objects.filter(ticker=operation_ticker).order_by('-date').first()
                 
-        elif 'quantity_sell' in request.POST and sell_form.is_valid():
-            ticker_sell = sell_form.cleaned_data['ticker']
-            quantity_sell = sell_form.cleaned_data['quantity_sell']
-            user_profile, created = UserProfile.objects.get_or_create(user=request.user)
-            stock_data_sell = StockData.objects.filter(ticker=ticker_sell, user=request.user).order_by('-date').first()
-            
-            total_bought = PurchaseData.objects.filter(ticker=ticker_sell, user=request.user).aggregate(total_bought=Sum('quantity_bought'))['total_bought'] or 0
-            total_sold = PurchaseData.objects.filter(ticker=ticker_sell, user=request.user).aggregate(total_sold=Sum('quantity_sold'))['total_sold'] or 0
-            net_quantity = total_bought - total_sold
-            
-            if net_quantity >= quantity_sell:
-                stock_data_sell = StockData.objects.filter(ticker=ticker_sell, user=request.user).order_by('-date').first()
-                
-                if stock_data_sell and quantity_sell > 0:
-                    current_price = stock_data_sell.close_price
-                    total_value = current_price * quantity_sell
+                if stock_data:
+                    purchase_price = stock_data.close_price # Envia cria uma variável com o preço do ticker recuperado no banco de dados
+                    user = request.user # Cria a variável temporária do usuário para a instancia
+                    total_cost = purchase_price * operation_quantity # Calcula o preço total da compra
                     
-                    if total_value > 0:
-                        with transaction.atomic():
-                            balance_before=user_profile.saldo
-                            user_profile.saldo += total_value
-                            user_profile.save()
+                    if user_profile.saldo >= total_cost:
+                        with transaction.atomic(): # Garantia de consistência dos dados
+                            balance_before = user_profile.saldo # Segurando o valor do saldo atual
+                            user_profile.saldo -= total_cost # Reduzindo o valor debitado da compra
+                            user_profile.save() # Salvando no user profile o valor novo do saldo pós compra
                             
-                            PurchaseData.objects.create(
-                                ticker=ticker_sell,
-                                quantity_sold=quantity_sell,
-                                purchase_price=current_price,
-                                user=request.user
-                            )
-                            
-                            Transaction.objects.create(
-                                user=request.user,
-                                ticker=ticker_sell,
-                                quantity=quantity_sell,
-                                transaction_type='sell',
-                                price=current_price,
-                                balance_before=balance_before,
-                                balance_after=user_profile.saldo
-                            )
-                            
-                            update_wallet(ticker_sell, request.user)
-                        messages.success(request, f'{quantity_sell} {ticker_sell} tickets sold!')
+                            Operation.objects.create( # Salvando no modelo "Operation" os novos valores
+                                user=request.user, 
+                                ticker=operation_ticker, 
+                                quantity=operation_quantity, 
+                                operation_type='buy', 
+                                price=purchase_price, 
+                                balance_before=balance_before, 
+                                balance_after=user_profile.saldo 
+                            )       
+                            update_wallet(operation_ticker, request.user) # Chamando a função de atualização da carteira PESSOAL passando os dados salvos na instância
+                        messages.success(request, 'Purchase made successfully!')
                     else:
-                        messages.error(request, 'Insufficient tickets to make the sale.')
+                        messages.warning(request, 'Insufficient balance to make the purchase.')
                 else:
-                    messages.error(request, 'Stock data not found or invalid quantity.')
-            else:
-                messages.error(request, 'Insufficient tickets to make the sale.')
+                    messages.warning(request, 'Ticker not found in stock data.')
+                    
+            elif operation_selected == 'sell':
+                ticker_sell = operation_ticker # Ticker a ser vendido
+                quantity = operation_quantity # Quantidade a ser vendida
+                stock_data_sell = StockData.objects.filter(ticker=ticker_sell).order_by('-date').first() # Recupera a ação com o último registro de valor salvo
+                
+                total_bought = Operation.objects.filter(ticker=ticker_sell, user=request.user, operation_type='buy').aggregate(Sum('quantity'))['quantity__sum'] or 0 # Soma de tudo que já foi comprado
+                total_sold = Operation.objects.filter(ticker=ticker_sell, user=request.user, operation_type=operation_selected).aggregate(Sum('quantity'))['quantity__sum'] or 0 # Soma de tudo que já foi vendido
+                net_quantity = total_bought - total_sold # Quantidade de ações disponíveis para venda
+                
+                if net_quantity >= quantity:
+                    if stock_data_sell and quantity > 0:
+                        current_price = stock_data_sell.close_price # Define o valor atual como o valor recuperado pelo yFinance e salvo no Stockdata
+                        total_value = current_price * quantity # Multiplica o preço atual pela quantidade a ser vendida
+                        
+                        if total_value > 0:
+                            with transaction.atomic(): # Integridade
+                                balance_before=user_profile.saldo # Recupera valor atual de saldo
+                                user_profile.saldo += total_value # Atualiza o saldo com a adição dos valores advindos da venda
+                                user_profile.save() # Salva o perfil do usuário
+                                
+                                Operation.objects.create(
+                                    user=request.user,
+                                    ticker=ticker_sell,
+                                    quantity=quantity,
+                                    operation_type='sell',
+                                    price=current_price,
+                                    balance_before=balance_before,
+                                    balance_after=user_profile.saldo
+                                )                             
+                                update_wallet(ticker_sell, request.user)
+                            messages.success(request, f'{quantity} {ticker_sell} tickets sold!')
+                        else:
+                            messages.warning(request, 'Insufficient tickets to make the sale.')
+                    else:
+                        messages.warning(request, 'Stock data not found or invalid quantity.')
+                else:
+                    messages.warning(request, 'Insufficient tickets to make the sale.')
+            return redirect('home')
 
-        return redirect('home')
-    else:
-        purchase_form = PurchaseForm()
-        sell_form = SellForm()
-
-    user_purchase_history = PurchaseData.objects.filter(user=request.user).order_by('-date')
+    user_purchase_history = Operation.objects.filter(user=request.user, operation_type='buy').order_by('-date')[:5]
+    user_sales_history = Operation.objects.filter(user=request.user, operation_type='sell').order_by('-date')[:5]
+    
     context = {
-        'saved_data': saved_data,
-        'purchase_form': purchase_form,
-        'sell_form' : sell_form,
+        'saved_data' : saved_data,
         'user_purchase_history': user_purchase_history,
+        'user_sales_history': user_sales_history,
     }
 
     return render(request, 'index.html', context)
 
 def update_wallet(ticker, user):
-    total_bought = PurchaseData.objects.filter(ticker=ticker, user=user).aggregate(total_bought=Sum('quantity_bought'))['total_bought'] or 0
-    total_sold = PurchaseData.objects.filter(ticker=ticker, user=user).aggregate(total_sold=Sum('quantity_sold'))['total_sold'] or 0
-    net_quantity = total_bought - total_sold
-    
-    if net_quantity > 0:
-        current_price = StockData.objects.filter(ticker=ticker, user=user).order_by('-date').first().close_price
-        average_price = PurchaseData.objects.filter(ticker=ticker, user=user).aggregate(price_average=Avg('purchase_price'))['price_average'] or 0
-        total = average_price * net_quantity
+    total_bought = Operation.objects.filter(ticker=ticker, user=user, operation_type='buy').aggregate(Sum('quantity'))['quantity__sum'] or 0 # Soma de tudo que já foi comprado
+    total_sold = Operation.objects.filter(ticker=ticker, user=user, operation_type='sell').aggregate(Sum('quantity'))['quantity__sum'] or 0 # Soma de tudo que já foi vendido
+    net_quantity = total_bought - total_sold # Quantidade de ações disponíveis para venda
+    print(total_bought, total_sold, net_quantity)
+    if net_quantity >= 0:
+        current_price = StockData.objects.filter(ticker=ticker).order_by('date').first().close_price # Último valor salvo
+        average_price = Operation.objects.filter(ticker=ticker, user=user).aggregate(price_average=Avg('price'))['price_average'] or 0 # Valor que valem os tick
+        total = average_price * net_quantity # Saldo
         
         Walletitself.objects.update_or_create(
             user=user,
@@ -165,63 +153,105 @@ def update_wallet(ticker, user):
                 'quantity': net_quantity,
                 'price': current_price,
                 'price_average': average_price,
-                'total' : total
+                'total' : net_quantity * current_price,
             }
         )
     else:
         Walletitself.objects.filter(user=user, ticker=ticker).delete()
 
-def remove_duplicates(user):
-    duplicates = (StockData.objects
-                  .filter(user=user)
-                  .values('ticker')
-                  .annotate(count_id=Count('id'))
-                  .filter(count_id__gt=1))
-    
-    for duplicate in duplicates:
-        ticker = duplicate['ticker']
-        dup_records = StockData.objects.filter(ticker=ticker, user=user).order_by('-date')
-        for record in dup_records[1:]:
-            record.delete()
 
-def register(request):
-    if request.method == 'POST':
-        form = RegisterForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect('home')
-    else:
-        form = RegisterForm()
-    return render(request, 'registration/register.html', {'form': form})
-
-def custom_logout(request):
-    logout(request)
-    return redirect('login')
-
-@login_required
-def adicionar_saldo(request):
-    if request.method == 'POST':
-        form = AdicionarSaldoForm(request.POST)
-        if form.is_valid():
-            saldo_adicionado = form.cleaned_data['saldo']
-            user_profile = UserProfile.objects.get(user=request.user)
-            user_profile.saldo += saldo_adicionado
-            user_profile.save()
-            return redirect('perfil_usuario')
-    else:
-        form = AdicionarSaldoForm()
-    return render(request, 'adicionar_saldo.html', {'form': form})
-
-
+# HISTÓRICO COMPLETO DE TRANSAÇÕES DE COMPRA E VENDA FEITAS
 @login_required
 def transaction_history(request):
-    transactions = Transaction.objects.filter(user=request.user).order_by('-date')
-    context = {'transactions': transactions}
+    transactions = Operation.objects.filter(user=request.user).order_by('-date')
+    paginator = Paginator(transactions, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {'page_obj': page_obj}
     return render(request, 'transaction_history.html', context)
-
+# DETALHES DA CARTEIRA DE INVESTIMENTOS
 @login_required
 def wallet_details(request):
     details = Walletitself.objects.filter(user=request.user)
     context = {'details' : details}
     return render(request, 'wallet_details.html', context)
+# LOGIN/LOGOUT PERSONALIZADO
+def custom_register(request):
+    
+    if request.user.is_authenticated:
+        return redirect('home')       
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        password2= request.POST.get('password2')
+            
+        #Fazer alguns testes manuais pra ver se os dados são válidos
+        if username and email and password:
+            if User.objects.filter(username=username).exists():
+                messages.warning(request,"This username already exists!")
+            elif User.objects.filter(email=email).exists():
+                messages.warning(request,"This e-mail already in use!")
+            elif password != password2:
+                messages.warning(request,'The passwords are diferent!.')
+            else:
+                user = User.objects.create_user(username=username, email=email, password=password)
+                user = authenticate(request, username=username, password=password)
+                login(request, user)
+                return redirect('home')
+        else:
+            messages.alert(request, "Please fill all the fields")
+                
+    return render(request, 'registration/register.html')
+
+        
+def custom_logout(request):
+    logout(request)
+    return redirect('login')
+
+def custom_login(request):
+    
+    if request.user.is_authenticated:
+        return redirect('home')    
+    
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            login(request, user)
+            return redirect('home')
+        else:
+            if User.objects.filter(username=username).exists():
+                messages.warning(request, 'Wrong password!')
+            else:
+                messages.error(request, "User not registered")
+                return render(request, 'registration/login.html')
+            
+    return render(request, 'registration/login.html')
+
+@login_required
+def ticker_info(request, ticker):
+    stock = yf.Ticker(ticker)
+    info = stock.info
+
+    context = {
+        'ticker': ticker,
+        'info': info,
+        'quote': {
+            'previousClose': info.get('previousClose', 'N/A'),
+            'open': info.get('open', 'N/A'),
+            'dayLow': info.get('dayLow', 'N/A'),
+            'dayHigh': info.get('dayHigh', 'N/A'),
+            'volume': info.get('volume', 'N/A'),
+        },
+        'dividends': {
+            'dividendRate': info.get('dividendRate', 'N/A'),
+            'dividendYield': info.get('dividendYield', 'N/A'),
+            'exDividendDate': info.get('exDividendDate', 'N/A'),
+        },
+    }
+
+    return render(request, 'ticker_info.html', context)

@@ -1,186 +1,36 @@
-/* Reset some default styles */
-* {
+*, body {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    color: #333;
-    padding: 20px;
-}
 
-.nav-menu {
-    background-color: #0044cc;
-    color: #fff;
-    padding: 10px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.nav-menu .main-title {
-    font-size: 1.5em;
-}
-
-.nav-menu ul {
-    list-style: none;
-    display: flex;
-    gap: 15px;
-}
-
-.nav-menu a {
-    color: #fff;
-    text-decoration: none;
-    padding: 5px 10px;
-    border-radius: 5px;
-    transition: background-color 0.3s;
-}
-
-.nav-menu a:hover {
-    background-color: #0033aa;
-}
-
-.wallet-funds {
-    margin-bottom: 20px;
-    background-color: #fff;
-    padding: 10px;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.wallet-funds .funds-name {
-    font-size: 2.2em;
-    font-weight: bold;
-}
 
 .available-tickets {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 5px;
     margin-bottom: 20px;
 }
-
 .available-tickets .ticket {
-    background-color: #fff;
-    padding: 10px;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.purchase-section, .sell-section {
-    margin-bottom: 20px;
-    background-color: #fff;
-    padding: 15px;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    width: 50%;
-}
-.purchase-section{
-    margin-right: 5px;
-}
-
-.sell-section{
-    margin-left: 5px;
-}
-
-.purchase-section h2, .sell-section h2, .purchase-history h2 {
-    margin-bottom: 10px;
-}
-
-.purchase-section form, .sell-section form {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-}
-
-.purchase-section button, .sell-section button, .wallet-funds button {
-    align-self: flex-start;
-    padding: 10px 20px;
-    background-color: #0044cc;
-    color: #fff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.purchase-section button:hover, .sell-section button:hover, .wallet-funds button:hover {
-    background-color: #0033aa;
-}
-
-.purchase-history {
+    align-items: center;
     background-color: #fff;
-    padding: 15px;
-    border-radius: 5px;
+    padding: 3px;
+    border-radius: 2px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
-
-.purchase-history ul {
-    list-style: none;
+.available-tickets .ticket h5{
+    padding: auto;
 }
-
-.purchase-history li {
-    padding: 5px 0;
-    border-bottom: 1px solid #ccc;
-}
-
-.purchase-history li:last-child {
-    border-bottom: none;
-}
-
-
-.sell-history {
-    background-color: #fff;
-    padding: 15px;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    margin-top: 20px;
-}
-
-.sell-history ul {
-    list-style: none;
-}
-
-.sell-history li {
-    padding: 5px 0;
-    border-bottom: 1px solid #ccc;
-}
-
-.sell-history li:last-child {
-    border-bottom: none;
-}
-
-.operations{
-    display: flex;
-    width: 100%;
-}
+/* Fim da parte dos tickets disponíveis*/
 
 .custom-ticker{
     width: 96px;
 }
 .custom-ticker:hover{
     background-color: lightgray;
-}
-
-.login-block{
-    display: flex;
-    flex-direction: column;
-
-    align-items: center;
-    justify-content: center;
-    background-color: lightgray;
-    width: 100%;
-    height: 610px;
-}
-
-.login-block h2{
-    color: rgb(25, 23, 23);
-    font-size: 30px;
-
-    margin: 10px;
 }
 
 .container-history{
@@ -202,3 +52,50 @@ th, td {
     vertical-align: middle;
 }
 
+.ticker-info {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.ticker-info h1 {
+    font-size: 2em;
+    margin-bottom: 10px;
+}
+
+.ticker-info .info-section,
+.ticker-info .quote-section,
+.ticker-info .dividends-section {
+    margin-bottom: 20px;
+}
+
+.ticker-info p {
+    margin-bottom: 5px;
+    font-size: 1.1em;
+}
+
+.ticket{
+    text-decoration: none;
+    color: black;
+}
+.operation-section{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+.form-options{
+    display: flex;
+    flex-direction: row !important;
+}
+
+.formulario{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.button-end{
+    margin-top: 5px;
+}

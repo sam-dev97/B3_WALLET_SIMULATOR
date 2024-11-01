@@ -1,35 +1,44 @@
 {% extends 'base_generic.html' %}
 {% block content %}
-<div class="container-history">
-    <h1>You Wallet</h1>
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Ticker code</th>
-                    <th>Quantity</th>
-                    <th>Price Now</th>
-                    <th>Average price paid</th>
-                    <th>Total amount</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for detail in details %}
-                    <tr>
-                        <td>{{ detail.ticker }}</td>            
-                        <td>{{ detail.quantity }}</td>
-                        <td>{{ detail.price }}</td>
-                        <td>{{ detail.price_average }}</td>
-                        <td> {{ detail.total }}</td>
-                        
+
+<div class="row">
+    <div class="col bg-info text-white justify-content-center"  style="width:100%; display: flex;">
+        <h1>YOUR STOCK WALLET</h1>
+    </div>
+</div>
+
+
+<div class="row mt-5">
+    <div class="container-history">
+        <div class="table-container" style="width: 80%; font-size: 15px;">
+            <table class="table table-striped">
+                <thead class="bg-info">
+                    <tr style="color: white;">
+                        <th scope="col">Ticker code</th>
+                        <th scope="col">Quantity</th>
+                        <th scope="col">Price Now</th>
+                        <th scope="col">Average price paid</th>
+                        <th scope="col">Total amount</th>
                     </tr>
-                {% empty %}
-                    <tr>
-                        <td colspan="7" class="empty-row">None transantions found.</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {% for detail in details %}
+                        <tr scope="row">
+                            <td>{{ detail.ticker }}</td>            
+                            <td>{{ detail.quantity }}</td>
+                            <td>{{ detail.price }}</td>
+                            <td>{{ detail.price_average }}</td>
+                            <td>{{ detail.total }}</td>
+                            
+                        </tr>
+                    {% empty %}
+                        <tr scope="row">
+                            <td colspan="7" class="empty-row">None transantions found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}

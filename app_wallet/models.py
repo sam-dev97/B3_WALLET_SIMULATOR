@@ -7,15 +7,17 @@ from django.dispatch import receiver
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     saldo = models.DecimalField(max_digits=10, decimal_places=2, default=100000.00)
-
+    
     def __str__(self):
         return self.user.username
-    
+
+# Sempre que um usuário é criado, ao mesmo tempo é criado um perfil para ess usuário
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         UserProfile.objects.create(user=instance)
-
+        
+# Sempre salva o perfil quando alguma alteração é feita no usuário
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
     instance.userprofile.save()
@@ -23,37 +25,24 @@ def save_user_profile(sender, instance, **kwargs):
 class StockData(models.Model):
     ticker = models.CharField(max_length=10)
     close_price = models.DecimalField(max_digits=10, decimal_places=2)
-    date = models.DateField(auto_now_add=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, default=1) 
+    date = models.DateField(auto_now_add=True) 
 
     def __str__(self):
         return f"{self.ticker} - {self.date}"
-    class Meta:
-        unique_together = ('ticker', 'date', 'user')
     
-class PurchaseData(models.Model):
-    ticker = models.CharField(max_length=10)
-    quantity_bought = models.IntegerField(default=0)
-    purchase_price = models.DecimalField(max_digits=10, decimal_places=2)
-    quantity_sold = models.IntegerField(default=0) 
-    date = models.DateField(auto_now_add=True)
+class Operation(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f"{self.ticker} - {self.date}"
-
-class Transaction(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    ticker = models.CharField(max_length=10)
+    ticker = models.CharField(max_length=100)
     quantity = models.IntegerField(default=0)
-    transaction_type = models.CharField(max_length=10, choices=[('buy', 'Compra'), ('sell', 'Venda')])
+    operation_type = models.CharField(max_length=10, choices=[('buy', 'Buy'), ('sell', 'Sell')])
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     date = models.DateTimeField(auto_now_add=True)
-    balance_before = models.DecimalField(max_digits=10, decimal_places=2)
-    balance_after = models.DecimalField(max_digits=10, decimal_places=2)
-
+    balance_before = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    balance_after = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    
     def __str__(self):
-        return f"{self.user} - {self.ticker} - {self.transaction_type} - {self.date}"
+        return f"{self.user} - {self.ticker} - {self.operation_type} - {self.date}"
+    
     
 class Walletitself(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

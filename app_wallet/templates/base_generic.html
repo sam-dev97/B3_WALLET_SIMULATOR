@@ -1,43 +1,31 @@
 {% load static %}
+{% load bootstrap4 %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% bootstrap_css %}
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <title>{% block title %}INVESTIMENT WALLET SIMULATOR{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <title>{% block title %}STOCK INVESTIMENT SIMULATOR{% endblock %}</title>
 </head>
 <body>
+    <div class="container-fluid d-flex justify-content-center align-items-center bg-dark w-100 h-100">
+            <div class="row flex-wrap w-100 bg-light justify-content-center"> <!-- Todo o conteúdo que é impresso na tela-->
+                    {% if user.is_authenticated %} <!-- Apenas mostrar a barra de navegação se o usuário estiver autenticado-->
+                    <div class="col-auto col-md-2 bg-dark min-vh-100">
+                        {% include 'nav.html' %}    
+                    </div>
+                    {% endif %}
 
-    <nav class="nav-menu">
-        <p class="main-title">
-            INVESTIMENT WALLET SIMULATOR
-        </p>
+                    <div class="col col-md-10 min-vh-100 w-100">
+                        {% block content %} {% endblock %}
+                    </div>
+            </div>      
+    </div>
 
-        <ul>
-            <li><a href="{% url 'home' %}">Home</a></li>
-            <li><a href="{% url 'wallet_details' %}">Wallet Details</a></li>
-            <li><a href="{% url 'transaction_history' %}">Transaction history</a></li>
-            {% if user.is_authenticated %}
-                <li>Welcome, {{ user.username }}</li>
-                <li><a href="{% url 'logout' %}">Logout</a></li>
-            {% else %}
-                <li><a href="{% url 'login' %}">Login</a></li>
-                <li><a href="{% url 'register' %}">Register</a></li>
-            {% endif %}
-        </ul>
-    </nav>
-
-    {% if messages %}
-        <div>
-            {% for message in messages %}
-                <p>{{ message }}</p>
-            {% endfor %}
-        </div>
-    {% endif %}
-
-    {% block content %}
-    {% endblock %}
-
+{% bootstrap_javascript jquery='full' %} 
 </body>
 </html>

@@ -1,0 +1,24 @@
+{% load bootstrap4 %}
+{% load static %}
+<div class="row">
+    <div class="col">
+        <div class='operation-section'>     
+            <form class="formulario" method="post" autocomplete="on">
+                {% csrf_token %}
+                <div class="form-options">
+                    <select class="form-control" id="operation" name="operation">
+                        <option value="buy">Buy</option>
+                        <option value="sell">Sell</option>
+                    </select>
+                    <input type="text" id="ticker" name="ticker" class="form-control" placeholder="Ticker" required autofocus>
+                    <input type="number" id="quantity" name="quantity" class="form-control" placeholder="Quantity" required>
+                </div>
+                
+                <div class="button-end">
+                    <button class="btn btn-lg btn btn-info" type="submit">Buy/Sell</button>
+                </div>
+                
+            </form>
+        </div>
+    </div>
+</div>

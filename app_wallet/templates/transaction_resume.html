@@ -1,0 +1,99 @@
+{% load bootstrap4 %}
+{% load static %}
+    <!-- Linha principal do grid que comporta todo o conteúdo da sessão de resumo de transações -->
+    <div class="row w-100 container-fluid mt-5 justify-content-center d-flex align-items-center">
+        <!-- Coluna do resumo das compras -->
+        <div class="col container-fluid justify-content-center d-flex" style="max-width: 50%;">
+            <!-- Tabela de compras -->
+            <table class="table table-dark table-striped text-white" style="max-width: 90%;">
+                <thead class="thead-dark">
+                    <th>
+                        <h3>Latest Purchases</h3>
+                    </th>
+                    <tr>
+                        <td scope="col">
+                            Ticker
+                        </td>
+                        <td scope="col">
+                            Quantity
+                        </td>
+                        <td cope="col">
+                            Price
+                        </td>
+                    </tr>    
+                </thead>
+                <tbody>
+                    {% if user_purchase_history %}
+                        {% for purchase in user_purchase_history %}
+                            {% if purchase.user == request.user and purchase.operation_type == 'buy' %}
+                                <tr>
+                                    <td scope="col">
+                                        {{ purchase.ticker }}
+                                    </td>
+                                    <td scope="col">
+                                        {{ purchase.quantity }}
+                                    </td>
+                                    <td scope="col">
+                                        ${{ purchase.price }}
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                            <tr>
+                                <td>
+                                    No boughts are done yet.
+                                </td>
+                            </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Coluna do resumo das vendas -->
+        <div class="col container-fluid justify-content-center d-flex" style="max-width: 50%;">
+            <!-- Tabela de vendas -->
+            <table class="table table-dark table-striped text-white" style="max-width: 90%;">
+                <thead class="thead-dark">
+                    <th>
+                        <h3>Latest Sales</h3>
+                    </th>
+                    <tr>
+                        <td scope="col">
+                            Ticker
+                        </td>
+                        <td scope="col">
+                            Quantity
+                        </td>
+                        <td cope="col">
+                            Price
+                        </td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if user_sales_history %}
+                        {% for sale in user_sales_history %}
+                            {% if sale.user == request.user and sale.operation_type == 'sell' %}
+                                <tr>
+                                    <td scope="col">
+                                        {{ sale.ticker }}
+                                    </td>
+                                    <td scope="col">
+                                        {{ sale.quantity }}
+                                    </td>
+                                    <td scope="col">
+                                        ${{ sale.price }}
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                            <tr>
+                                <td>
+                                    No boughts are done yet.
+                                </td>
+                            </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
