@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import UserProfile, StockData, Walletitself, Operation
+from .models import UserProfile, StockData, Walletitself, Operation, BugReport
 
 # Customização da exibição do UserProfile no admin
 class UserProfileAdmin(admin.ModelAdmin):
@@ -23,8 +23,12 @@ class OperationAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'ticker')
     list_filter = ('ticker', 'user')
     
+class BugReportAdmin(admin.ModelAdmin):
+    list_display = ('bug_title', 'bug_description')
+    
 # Registrar todos os modelos no admin
 admin.site.register(UserProfile, UserProfileAdmin)
 admin.site.register(StockData, StockDataAdmin)
 admin.site.register(Walletitself, WalletitselfAdmin)
 admin.site.register(Operation, OperationAdmin)
+admin.site.register(BugReport, BugReportAdmin)

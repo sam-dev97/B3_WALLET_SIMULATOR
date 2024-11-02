@@ -8,7 +8,7 @@ from django.views.generic import ListView, TemplateView, FormView
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 # Wallet Management
-from .models import StockData, UserProfile, Operation, Walletitself
+from .models import StockData, UserProfile, Operation, Walletitself, BugReport
 
 # Imports de utilitáros do django
 from django.db import transaction
@@ -190,3 +190,13 @@ class UserRegisterView(View):
 def custom_logout(request):
     logout(request)
     return redirect('login')
+
+class BugReportView(TemplateView):
+    template_name = 'bug_report.html'
+    def post(self, request, *args, **kwargs):
+        bug_title = request.POST.get('bug_title')
+        bug_description = request.POST.get('bug_description')
+        
+        BugReport.objects.create(bug_title = bug_title, bug_description=bug_description)
+        messages.success(request, "Relatório enviado com sucesso! Obrigado por contribuir!")
+        return redirect('bug_report')
