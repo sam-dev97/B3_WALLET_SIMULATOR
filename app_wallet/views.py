@@ -185,8 +185,7 @@ class UserRegisterView(View):
                 return redirect('home')
         else:
             messages.error(request, "Please fill in all fields")
-            return redirect('register')
-        
+            return redirect('register') 
 #Não consegui transformar isso em class based views sem me tornar um primata
 def custom_logout(request):
     logout(request)

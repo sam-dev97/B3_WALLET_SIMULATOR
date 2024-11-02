@@ -5,7 +5,8 @@
         <h5 class="text-white align-items-botton align-self-center">YOUR WALLET:</h5>
         <h1 class="text-white ml-2"> USD {{ user.userprofile.saldo|floatformat:2 }}</h1>
     </div>
-    {% if messages %}
+</div>
+{% if messages %}
     <div class="row">
         <div class="col">
             {% for message in messages %}
@@ -13,5 +14,4 @@
             {% endfor%}
         </div>
     </div>
-    {% endif %}
-</div>
+{% endif %}
