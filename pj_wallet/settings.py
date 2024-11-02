@@ -58,7 +58,7 @@ WSGI_APPLICATION = 'pj_wallet.wsgi.application'
     }
 }'''
 
-'''DATABASES = {
+DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'walletdb',
@@ -70,11 +70,11 @@ WSGI_APPLICATION = 'pj_wallet.wsgi.application'
             'options': '-c client_encoding=utf8',
         },
     }
-}'''
-
-DATABASES = {
-    'default': dj_database_url.config(), # type: ignore
 }
+
+'''DATABASES = {
+    'default': dj_database_url.config(), # type: ignore
+}'''
 
 
 AUTH_PASSWORD_VALIDATORS = [

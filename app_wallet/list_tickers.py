@@ -1,1 +1,0 @@
-tickers = ["PETR4.SA", "VALE3.SA", "ITUB4.SA", "BBDC4.SA", "B3SA3.SA", "AAPL", "GOOGL", "MSFT", "JBSS3.SA"]

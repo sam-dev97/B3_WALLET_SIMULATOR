@@ -1,17 +1,18 @@
+#Funções principais do sistema
+from .main_functions import get_ticker_info, tickers, update_wallet, ticker_info
+
 # Gerenciamento de views (temporáriamente)
 from django.shortcuts import render, redirect
-# Framework principal
-import yfinance as yf
-from datetime import date
+from django.views.generic import ListView, TemplateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+
 # Wallet Management
 from .models import StockData, UserProfile, Operation, Walletitself
+
 # Imports de utilitáros do django
-from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Count, Sum, Avg
-from django.utils import timezone
-# Lista de ações pra não poluir a view
-from app_wallet import list_tickers
+
 #Authentication
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
@@ -20,28 +21,8 @@ from django.contrib import messages
 
 @login_required
 def home(request):
-    # Execução do Yfinance
-    for ticker in list_tickers.tickers:
-        stock = yf.Ticker(ticker)
-        history = stock.history(period='1d')
+    get_ticker_info()
         
-        if not history.empty:
-            latest_data = {
-                'Close': history['Close'].iloc[-1] # Pega o último valor registrado
-                }
-            stock_data = StockData.objects.filter(ticker=ticker).first()
-            
-            if stock_data:
-                stock_data.close_price = latest_data['Close']
-                stock_data.date = timezone.now().date()
-                stock_data.save()
-            else:
-                StockData.objects.create(
-                    ticker=ticker,
-                    close_price=latest_data['Close'],
-                    date = timezone.now().date(),
-                )
-                
     saved_data = StockData.objects.all()
 
     if request.method == 'POST':
@@ -49,7 +30,7 @@ def home(request):
         operation_ticker = request.POST.get('ticker')
         operation_quantity = int(request.POST.get('quantity'))
         
-        if operation_ticker not in list_tickers.tickers or operation_quantity < 1:
+        if operation_ticker not in tickers or operation_quantity < 1:
             messages.warning(request, "Ticker doesn't exist or invalid quantity!")
         else:
             user_profile = UserProfile.objects.get(user=request.user)
@@ -136,46 +117,24 @@ def home(request):
 
     return render(request, 'index.html', context)
 
-def update_wallet(ticker, user):
-    total_bought = Operation.objects.filter(ticker=ticker, user=user, operation_type='buy').aggregate(Sum('quantity'))['quantity__sum'] or 0 # Soma de tudo que já foi comprado
-    total_sold = Operation.objects.filter(ticker=ticker, user=user, operation_type='sell').aggregate(Sum('quantity'))['quantity__sum'] or 0 # Soma de tudo que já foi vendido
-    net_quantity = total_bought - total_sold # Quantidade de ações disponíveis para venda
-    print(total_bought, total_sold, net_quantity)
-    if net_quantity >= 0:
-        current_price = StockData.objects.filter(ticker=ticker).order_by('date').first().close_price # Último valor salvo
-        average_price = Operation.objects.filter(ticker=ticker, user=user).aggregate(price_average=Avg('price'))['price_average'] or 0 # Valor que valem os tick
-        total = average_price * net_quantity # Saldo
-        
-        Walletitself.objects.update_or_create(
-            user=user,
-            ticker=ticker,
-            defaults={
-                'quantity': net_quantity,
-                'price': current_price,
-                'price_average': average_price,
-                'total' : net_quantity * current_price,
-            }
-        )
-    else:
-        Walletitself.objects.filter(user=user, ticker=ticker).delete()
 
+class TransactionHistoryView(LoginRequiredMixin, ListView):
+    model = Operation
+    template_name = 'transaction_history.html'
+    context_object_name = 'transactions'
+    paginate_by = 10
 
-# HISTÓRICO COMPLETO DE TRANSAÇÕES DE COMPRA E VENDA FEITAS
-@login_required
-def transaction_history(request):
-    transactions = Operation.objects.filter(user=request.user).order_by('-date')
-    paginator = Paginator(transactions, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    context = {'page_obj': page_obj}
-    return render(request, 'transaction_history.html', context)
-# DETALHES DA CARTEIRA DE INVESTIMENTOS
-@login_required
-def wallet_details(request):
-    details = Walletitself.objects.filter(user=request.user)
-    context = {'details' : details}
-    return render(request, 'wallet_details.html', context)
-# LOGIN/LOGOUT PERSONALIZADO
+    def get_queryset(self):
+        return Operation.objects.filter(user=self.request.user).order_by('-date')
+
+class WalletDetailsView(LoginRequiredMixin, ListView):
+    model = Walletitself
+    template_name = 'wallet_details.html'
+    context_object_name = 'details'
+
+    def get_queryset(self):
+        return Walletitself.objects.filter(user=self.request.user).order_by('-price')
+
 def custom_register(request):
     
     if request.user.is_authenticated:
@@ -185,8 +144,7 @@ def custom_register(request):
         email = request.POST.get('email')
         password = request.POST.get('password')
         password2= request.POST.get('password2')
-            
-        #Fazer alguns testes manuais pra ver se os dados são válidos
+        
         if username and email and password:
             if User.objects.filter(username=username).exists():
                 messages.warning(request,"This username already exists!")
@@ -232,26 +190,5 @@ def custom_login(request):
             
     return render(request, 'registration/login.html')
 
-@login_required
-def ticker_info(request, ticker):
-    stock = yf.Ticker(ticker)
-    info = stock.info
-
-    context = {
-        'ticker': ticker,
-        'info': info,
-        'quote': {
-            'previousClose': info.get('previousClose', 'N/A'),
-            'open': info.get('open', 'N/A'),
-            'dayLow': info.get('dayLow', 'N/A'),
-            'dayHigh': info.get('dayHigh', 'N/A'),
-            'volume': info.get('volume', 'N/A'),
-        },
-        'dividends': {
-            'dividendRate': info.get('dividendRate', 'N/A'),
-            'dividendYield': info.get('dividendYield', 'N/A'),
-            'exDividendDate': info.get('exDividendDate', 'N/A'),
-        },
-    }
-
-    return render(request, 'ticker_info.html', context)
+class TickerInfoView(LoginRequiredMixin, TemplateView):
+    template_name = 'ticker_info.html'
