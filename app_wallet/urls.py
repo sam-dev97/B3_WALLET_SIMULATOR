@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views import home, custom_register, custom_login, custom_logout, TickerInfoView, TransactionHistoryView, WalletDetailsView
+from .views import home, UserRegisterView, custom_logout, TickerInfoView, TransactionHistoryView, WalletDetailsView, UserLoginView
 
 urlpatterns = [
     path('', home, name='home'),
@@ -9,7 +9,7 @@ urlpatterns = [
     
     # Parte de autenticação
     path('accounts/', include('django.contrib.auth.urls')),
-    path('register/', custom_register, name='register'),
+    path('register/', UserRegisterView.as_view(), name='register'),
+    path('login/', UserLoginView.as_view(), name='login'),
     path('logout/', custom_logout, name='logout'),
-    path('login/', custom_login, name='login'),
 ]

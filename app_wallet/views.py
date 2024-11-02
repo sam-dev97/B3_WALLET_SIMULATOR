@@ -2,8 +2,9 @@
 from .main_functions import get_ticker_info, tickers, update_wallet, ticker_info
 
 # Gerenciamento de views (temporáriamente)
+from django.views import View
 from django.shortcuts import render, redirect
-from django.views.generic import ListView, TemplateView
+from django.views.generic import ListView, TemplateView, FormView
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 # Wallet Management
@@ -12,6 +13,8 @@ from .models import StockData, UserProfile, Operation, Walletitself
 # Imports de utilitáros do django
 from django.db import transaction
 from django.db.models import Count, Sum, Avg
+from django.http import HttpResponseRedirect
+from django.urls import reverse_lazy
 
 #Authentication
 from django.contrib.auth import login, logout, authenticate
@@ -117,7 +120,6 @@ def home(request):
 
     return render(request, 'index.html', context)
 
-
 class TransactionHistoryView(LoginRequiredMixin, ListView):
     model = Operation
     template_name = 'transaction_history.html'
@@ -135,60 +137,62 @@ class WalletDetailsView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         return Walletitself.objects.filter(user=self.request.user).order_by('-price')
 
-def custom_register(request):
+class TickerInfoView(LoginRequiredMixin, TemplateView):
+    template_name = 'ticker_info.html'
     
-    if request.user.is_authenticated:
-        return redirect('home')       
-    if request.method == 'POST':
+class UserLoginView(FormView):
+    template_name = 'registration/login.html'
+    success_url = reverse_lazy('home')
+    def post(self, request, *args, **kwargs):
         username = request.POST.get('username')
-        email = request.POST.get('email')
         password = request.POST.get('password')
-        password2= request.POST.get('password2')
-        
-        if username and email and password:
-            if User.objects.filter(username=username).exists():
-                messages.warning(request,"This username already exists!")
-            elif User.objects.filter(email=email).exists():
-                messages.warning(request,"This e-mail already in use!")
-            elif password != password2:
-                messages.warning(request,'The passwords are diferent!.')
-            else:
-                user = User.objects.create_user(username=username, email=email, password=password)
-                user = authenticate(request, username=username, password=password)
-                login(request, user)
-                return redirect('home')
-        else:
-            messages.alert(request, "Please fill all the fields")
-                
-    return render(request, 'registration/register.html')
 
-        
-def custom_logout(request):
-    logout(request)
-    return redirect('login')
-
-def custom_login(request):
-    
-    if request.user.is_authenticated:
-        return redirect('home')    
-    
-    if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
-        
         user = authenticate(request, username=username, password=password)
         
         if user is not None:
             login(request, user)
-            return redirect('home')
+            messages.success(request, f'Welcome, {username}!')
+            return HttpResponseRedirect(self.get_success_url())
         else:
+            messages.warning(request, 'Username or password incorrect!')
+            return HttpResponseRedirect(reverse_lazy('login'))
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name)
+    
+class UserRegisterView(View):
+    template_name = 'registration/register.html'  
+    success_url = reverse_lazy('home')  
+    
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name)    
+    
+    def post(self, request, *args, **kwargs):
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        password2 = request.POST.get('password2')
+        
+        if username and email and password:
             if User.objects.filter(username=username).exists():
-                messages.warning(request, 'Wrong password!')
+                messages.warning(request, "This username already exists!")
+                return redirect('register')
+            elif User.objects.filter(email=email).exists():
+                messages.warning(request, "This e-mail is already in use!")
+                return redirect('register')
+            elif password != password2:
+                messages.warning(request, 'The passwords do not match!')
+                return redirect('register')
             else:
-                messages.error(request, "User not registered")
-                return render(request, 'registration/login.html')
-            
-    return render(request, 'registration/login.html')
-
-class TickerInfoView(LoginRequiredMixin, TemplateView):
-    template_name = 'ticker_info.html'
+                user = User.objects.create_user(username=username, email=email, password=password)
+                user = authenticate(request, username=username, password=password)
+                login(request, user)
+                messages.success(request, "Account created successfully!")
+                return redirect('home')
+        else:
+            messages.error(request, "Please fill in all fields")
+            return redirect('register')
+        
+#Não consegui transformar isso em class based views sem me tornar um primata
+def custom_logout(request):
+    logout(request)
+    return redirect('login')
