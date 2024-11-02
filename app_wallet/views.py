@@ -22,13 +22,10 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
-@login_required
-def home(request):
-    get_ticker_info()
-        
-    saved_data = StockData.objects.all()
-
-    if request.method == 'POST':
+class HomeIndexView(LoginRequiredMixin, TemplateView):
+    template_name = 'index.html'
+    
+    def post(self, request, *args, **kwargs):
         operation_selected = request.POST.get('operation')
         operation_ticker = request.POST.get('ticker')
         operation_quantity = int(request.POST.get('quantity'))
@@ -107,18 +104,16 @@ def home(request):
                         messages.warning(request, 'Stock data not found or invalid quantity.')
                 else:
                     messages.warning(request, 'Insufficient tickets to make the sale.')
-            return redirect('home')
-
-    user_purchase_history = Operation.objects.filter(user=request.user, operation_type='buy').order_by('-date')[:5]
-    user_sales_history = Operation.objects.filter(user=request.user, operation_type='sell').order_by('-date')[:5]
-    
-    context = {
-        'saved_data' : saved_data,
-        'user_purchase_history': user_purchase_history,
-        'user_sales_history': user_sales_history,
-    }
-
-    return render(request, 'index.html', context)
+        return redirect('home')
+        
+    def get_context_data(self, **kwargs):
+        get_ticker_info()
+        saved_data = StockData.objects.all()
+        context = super().get_context_data(**kwargs)
+        context['saved_data'] = saved_data
+        context['user_purchase_history'] = Operation.objects.filter(user=self.request.user, operation_type='buy').order_by('-date')[:5]
+        context['user_sales_history'] = Operation.objects.filter(user=self.request.user, operation_type='sell').order_by('-date')[:5]
+        return context
 
 class TransactionHistoryView(LoginRequiredMixin, ListView):
     model = Operation
