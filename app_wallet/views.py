@@ -113,6 +113,7 @@ class HomeIndexView(LoginRequiredMixin, TemplateView):
         context['saved_data'] = saved_data
         context['user_purchase_history'] = Operation.objects.filter(user=self.request.user, operation_type='buy').order_by('-date')[:5]
         context['user_sales_history'] = Operation.objects.filter(user=self.request.user, operation_type='sell').order_by('-date')[:5]
+        context['list_of_tickers'] = tickers
         return context
 
 class TransactionHistoryView(LoginRequiredMixin, ListView):

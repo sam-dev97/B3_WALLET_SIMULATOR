@@ -1,0 +1,101 @@
+*, body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+
+.available-tickets {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 5px;
+    margin-bottom: 20px;
+}
+.available-tickets .ticket {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #fff;
+    padding: 3px;
+    border-radius: 2px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+.available-tickets .ticket h5{
+    padding: auto;
+}
+/* Fim da parte dos tickets disponíveis*/
+
+.custom-ticker{
+    width: 96px;
+}
+.custom-ticker:hover{
+    background-color: lightgray;
+}
+
+.container-history{
+    padding: 10px;
+    display: flex;
+    
+    flex-direction: column;
+    width: 100%;
+    align-content: center;
+    align-items: center;
+    justify-content: center;
+}
+
+
+
+th, td {
+    padding: 10px;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.ticker-info {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.ticker-info h1 {
+    font-size: 2em;
+    margin-bottom: 10px;
+}
+
+.ticker-info .info-section,
+.ticker-info .quote-section,
+.ticker-info .dividends-section {
+    margin-bottom: 20px;
+}
+
+.ticker-info p {
+    margin-bottom: 5px;
+    font-size: 1.1em;
+}
+
+.ticket{
+    text-decoration: none;
+    color: black;
+}
+.operation-section{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+.form-options{
+    display: flex;
+    flex-direction: row !important;
+}
+
+.formulario{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.button-end{
+    margin-top: 5px;
+}

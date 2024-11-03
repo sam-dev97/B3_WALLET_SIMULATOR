@@ -10,7 +10,12 @@
                         <option value="buy">Buy</option>
                         <option value="sell">Sell</option>
                     </select>
-                    <input type="text" id="ticker" name="ticker" class="form-control" placeholder="Ticker" required autofocus>
+                    <!--<input type="text" id="ticker" name="ticker" class="form-control" placeholder="Ticker" required autofocus>-->
+                    <select class="form-control" id="ticker" name="ticker">
+                        {% for item in list_of_tickers %}
+                            <option value="{{item}}">{{item}}</option>
+                        {% endfor %}
+                    </select>
                     <input type="number" id="quantity" name="quantity" class="form-control" placeholder="Quantity" required>
                 </div>
                 
